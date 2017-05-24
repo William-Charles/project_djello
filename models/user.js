@@ -1,47 +1,40 @@
-"use strict";
-const shortId = require("shortid");
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+const uniqueValidator = require("mongoose-unique-validator");
 const bcrypt = require("bcrypt");
 
-module.exports = function(sequelize, DataTypes) {
-  var User = sequelize.define(
-    "User",
+const UserSchema = mongoose.Schema({
+  email: {
+    type: String,
+    unique: true,
+    required: true
+  },
+  fname: { type: String },
+  lname: { type: String },
+  points: { type: Number },
+  passwordHash: { type: String },
+  parent: {
+    type: Schema.Types.ObjectId,
+    ref: "User"
+  },
+  children: [
     {
-      fname: DataTypes.STRING,
-      lname: DataTypes.STRING,
-      username: DataTypes.STRING,
-      email: DataTypes.STRING,
-      passwordHash: DataTypes.STRING,
-      token: DataTypes.STRING
-    },
-    {
-      classMethods: {
-        associate: function(models) {
-          // associations can be defined here
-        }
-      },
-      instanceMethods: {
-        validatePassword: function(password) {
-          let passwordHash = this.getDataValue("passwordHash");
-          return bcrypt.compareSync(password, passwordHash);
-        }
-      }
+      type: Schema.Types.ObjectId,
+      ref: "User"
     }
-  );
+  ]
+});
 
-  User.beforeCreate(async function(user, options, done) {
-    //passwordHash will temporarily be the actual password
-    let password = user.getDataValue("passwordHash");
-    let passwordHash = await bcrypt.hash(password, 8);
-    user.setDataValue("passwordHash", passwordHash);
-    done(null, options);
-  });
-  User.beforeCreate(async function(user, options, done) {
-    //create token for user
-    let email = user.getDataValue("email");
-    let token = await bcrypt.hash(email + shortId.generate(), 8);
-    user.setDataValue("token", token);
-    done(null, options);
-  });
+UserSchema.plugin(uniqueValidator);
 
-  return User;
+UserSchema.virtual("password").set(function(value) {
+  this.passwordHash = bcrypt.hashSync(value, 8);
+});
+
+UserSchema.methods.validPassword = function(password) {
+  return bcrypt.compareSync(password, this.passwordHash);
 };
+
+const User = mongoose.model("User", UserSchema);
+
+module.exports = User;
