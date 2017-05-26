@@ -13,24 +13,9 @@ class HomeContainer extends Component {
 
   componentDidMount() {
     const testBoardArray = [];
-    for (let i = 0; i < 5; i++) {
-      let testBoard = {};
-      testBoard.title = "Board number: " + i;
-      testBoard.desc =
-        "Lorem ipsum dolor sit amet, consectetur adipisicing elit.";
-      testBoard.cards = [];
-      for (let j = 0; j < 3; j++) {
-        let tempCard = {};
-        tempCard.title = "Card Number: " + j + " " + i;
-        tempCard.desc =
-          "Lorem ipsum dolor sit amet, consectetur adipisicing elit.";
-        testBoard.cards.push(tempCard);
-      }
-      testBoardArray.push(testBoard);
-    }
+
     this.props.getBoards(testBoardArray);
   }
-
   // componentWillReceiveProps(newProps) {
   //   let newResults = newProps.results;
   //

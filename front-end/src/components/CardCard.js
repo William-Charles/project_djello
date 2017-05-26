@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  Card,
-  CardImg,
-  CardText,
-  CardBlock,
-  CardTitle,
-  CardSubtitle,
-  Button
-} from "reactstrap";
+import { Card, CardBlock, CardSubtitle } from "reactstrap";
 
 const CardCard = ({ card }) => {
   return (
@@ -15,9 +7,6 @@ const CardCard = ({ card }) => {
       <Card>
         <CardBlock>
           <CardSubtitle>{card.title}</CardSubtitle>
-          <CardText>
-            {card.desc}
-          </CardText>
         </CardBlock>
       </Card>
     </div>

@@ -2,6 +2,8 @@ export const GET_LOGIN_SUCCESS = "GET_LOGIN_SUCCESS";
 export const GET_LOGIN_REQUEST = "GET_LOGIN_REQUEST";
 export const GET_LOGIN_FAILURE = "GET_LOGIN_FAILURE";
 export const GET_BOARDS = "GET_BOARDS";
+export const CREATE_BOARD = "CREATE_BOARD";
+export const CREATE_CARD = "CREATE_CARD";
 
 export function getLoginRequest(data) {
   return {
@@ -26,6 +28,20 @@ export function getLoginSuccess(data) {
 export function getBoards(data) {
   return {
     type: GET_BOARDS,
+    data
+  };
+}
+
+export function createBoard(data) {
+  return {
+    type: CREATE_BOARD,
+    data
+  };
+}
+
+export function createCard(data) {
+  return {
+    type: CREATE_CARD,
     data
   };
 }

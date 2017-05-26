@@ -1,7 +1,7 @@
 import * as Actions from "./actions";
 
 const initialState = {
-  loggedIn: false,
+  loggedIn: true,
   boards: [],
   isFetching: false,
   error: null
@@ -34,7 +34,23 @@ export function djelloApp(state = initialState, action) {
         boards: action.data,
         isFetching: false
       };
-
+    case Actions.CREATE_BOARD:
+      return {
+        ...state,
+        boards: [...state.boards, { title: action.data.title, cards: [] }],
+        isFetching: false
+      };
+    case Actions.CREATE_CARD:
+      return {
+        ...state,
+        boards: state.boards.map(board => {
+          if (board.title === action.data.parent) {
+            board.cards = [...board.cards, action.data];
+          }
+          return board;
+        }),
+        isFetching: false
+      };
     default:
       return {
         ...state

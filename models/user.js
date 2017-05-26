@@ -2,27 +2,15 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const uniqueValidator = require("mongoose-unique-validator");
 const bcrypt = require("bcrypt");
+const md5 = require("md5");
+const uuid = require("uuid/v4");
 
 const UserSchema = mongoose.Schema({
-  email: {
-    type: String,
-    unique: true,
-    required: true
-  },
-  fname: { type: String },
-  lname: { type: String },
-  points: { type: Number },
-  passwordHash: { type: String },
-  parent: {
-    type: Schema.Types.ObjectId,
-    ref: "User"
-  },
-  children: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "User"
-    }
-  ]
+  email: { type: String, required: true, unique: true },
+  avatar: { type: String },
+  token: { type: String, unique: true },
+  boards: [{ type: mongoose.Schema.ObjectId, ref: "Board" }],
+  passwordHash: { type: String, required: true }
 });
 
 UserSchema.plugin(uniqueValidator);
@@ -34,6 +22,11 @@ UserSchema.virtual("password").set(function(value) {
 UserSchema.methods.validPassword = function(password) {
   return bcrypt.compareSync(password, this.passwordHash);
 };
+
+UserSchema.pre("save", function(next) {
+  this.token = md5(`${this.email}${uuid()}`);
+  next();
+});
 
 const User = mongoose.model("User", UserSchema);
 

@@ -1,7 +1,21 @@
 /* eslint react/no-multi-comp: 0, react/prop-types: 0 */
 
 import React from "react";
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
+import serialize from "form-serialize";
+import { connect } from "react-redux";
+import {
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Form,
+  FormGroup,
+  Label,
+  Input,
+  FormText
+} from "reactstrap";
+import { createBoard, createCard } from "../actions";
 
 class ModalExample extends React.Component {
   constructor(props) {
@@ -13,36 +27,67 @@ class ModalExample extends React.Component {
     this.toggle = this.toggle.bind(this);
   }
 
-  toggle() {
+  toggle(e) {
     this.setState({
       modal: !this.state.modal
     });
   }
 
+  onSubmit = e => {
+    e.preventDefault();
+    this.toggle();
+    let form = e.target;
+    const data = serialize(form, { hash: true });
+    this.props.createBoard(data);
+  };
+
+  onSuccessSubmit = e => {
+    e.preventDefault();
+    this.toggle();
+    let form = e.target;
+    const data = serialize(form, { hash: true });
+    this.props.createCard(data);
+  };
+
   render() {
+    if (this.props.color === "success") {
+      this.onSubmit = this.onSuccessSubmit;
+    }
     return (
       <div>
-        <Button color="danger" onClick={this.toggle}>
-          {this.props.buttonLabel}
+        <Button color={this.props.color} onClick={this.toggle}>
+          {this.props.title}
         </Button>
         <Modal
           isOpen={this.state.modal}
           toggle={this.toggle}
           className={this.props.className}
         >
-          <ModalHeader toggle={this.toggle}>Modal title</ModalHeader>
+          <ModalHeader toggle={this.toggle}>{this.props.title}</ModalHeader>
           <ModalBody>
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            <Form onSubmit={this.onSubmit}>
+              <FormGroup>
+                <Input type="hidden" name="parent" value={this.props.parent} />
+                <Input type="text" name="title" />
+              </FormGroup>
+              <Button>Submit</Button>
+            </Form>
           </ModalBody>
-          <ModalFooter>
-            <Button color="primary" onClick={this.toggle}>Do Something</Button>
-            {" "}
-            <Button color="secondary" onClick={this.toggle}>Cancel</Button>
-          </ModalFooter>
         </Modal>
       </div>
     );
   }
 }
 
-export default ModalExample;
+const mapDispatchToProps = dispatch => {
+  return {
+    createBoard: data => {
+      dispatch(createBoard(data));
+    },
+    createCard: data => {
+      dispatch(createCard(data));
+    }
+  };
+};
+
+export default connect(null, mapDispatchToProps)(ModalExample);
