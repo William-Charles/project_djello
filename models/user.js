@@ -7,9 +7,12 @@ const uuid = require("uuid/v4");
 
 const UserSchema = mongoose.Schema({
   email: { type: String, required: true, unique: true },
-  avatar: { type: String },
+  picture: { type: String },
   token: { type: String, unique: true },
-  boards: [{ type: mongoose.Schema.ObjectId, ref: "Board" }],
+  boards: {
+    type: [{ type: String, ref: "Board" }],
+    default: []
+  },
   passwordHash: { type: String, required: true }
 });
 

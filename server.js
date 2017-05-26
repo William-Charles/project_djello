@@ -17,6 +17,24 @@ app.use((req, res, next) => {
 });
 
 // ----------------------------------------
+// Seeding
+// ----------------------------------------
+// const User = require("./models").User;
+// let user = new User({
+//   email: "willw10@hotmail.com",
+//   password: "123456",
+//   picture: "http://theredlist.com/media/database/films/cinema/2000/avatar-/027-avatar-theredlist.jpg"
+// });
+// user.save();
+
+// const Board = require("./models").Board;
+// let board = new Board({
+//   title: "First Test Board",
+//   owner: "c3409def3b5d2ae78b88d88ecfe94cb3"
+// });
+// board.save();
+
+// ----------------------------------------
 // Body Parser
 // ----------------------------------------
 app.use(
@@ -24,6 +42,7 @@ app.use(
     extended: false
   })
 );
+app.use(bodyParser.json());
 
 // ----------------------------------------
 // Sessions
@@ -35,71 +54,6 @@ app.use(
     resave: false
   })
 );
-
-// ----------------------------------------
-// Handlebars
-// ----------------------------------------
-var hbs = expressHandlebars.create({
-  partialsDir: "views/",
-  defaultLayout: "main",
-  helpers: {
-    pyramidContainerWidth: pyramid => {
-      return `${pyramid.length * 60}px`;
-    },
-    pyramidHeight: pyramid => {
-      let height = pyramid.length * 52;
-      return `${height}px`;
-    },
-    pyramidWidth: pyramid => {
-      let width = pyramid.length * 60 / 2;
-      return `${width}px`;
-    },
-    indent: depth => {
-      let indent = depth > 0 ? 50 : 0;
-      return `${indent}px`;
-    },
-    valueCalc: depth => {
-      let values = [40, 20, 10, 5, 2];
-      let value = depth < 5 ? values[depth] : 1;
-      return `$${value}`;
-    }
-  }
-});
-
-app.engine("handlebars", hbs.engine);
-app.set("view engine", "handlebars");
-
-// ----------------------------------------
-// Passport
-// ----------------------------------------
-const passport = require("passport");
-app.use(passport.initialize());
-app.use(passport.session());
-
-const LocalStrategy = require("passport-local").Strategy;
-const User = require("./models/User");
-passport.use(
-  new LocalStrategy({ usernameField: "email" }, function(
-    email,
-    password,
-    done
-  ) {
-    User.findOne({ email }, function(err, user) {
-      if (err) return done(err);
-      if (!user || !user.validPassword(password))
-        return done(null, false, { message: "Invalid email/password" });
-      return done(null, user);
-    });
-  })
-);
-
-passport.serializeUser(function(user, done) {
-  done(null, user.id);
-});
-
-passport.deserializeUser(function(id, done) {
-  User.findById(id).then(user => done(null, user)).catch(done);
-});
 
 // ----------------------------------------
 // Serve /public
@@ -117,10 +71,12 @@ app.use((req, res, next) => {
 // ----------------------------------------
 // Routers
 // ----------------------------------------
-const indexRouter = require("./routes/index")(passport);
+const passport = require("./services/passport")(app);
+const auth = require("./routes/auth")(passport);
+app.use(auth);
+
+const indexRouter = require("./routes/index");
 app.use("/", indexRouter);
-const ponzvertRouter = require("./routes/ponzvert");
-app.use("/ponzvert", ponzvertRouter);
 
 // ----------------------------------------
 // Error Handler

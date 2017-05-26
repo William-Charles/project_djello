@@ -1,61 +1,46 @@
 const express = require("express");
 let router = express.Router();
 
-const { clone, buildPyramid } = require("../services/ponz");
+const User = require("../models").User;
+const Board = require("../models").Board;
 
-const { loggedInOnly, loggedOutOnly } = require("../services/session");
-
-const User = require("../models/User");
-
-module.exports = passport => {
-  router.get("/", loggedInOnly, async (req, res, next) => {
-    let user = await req.user.populateChildren();
-    let userClone = clone(user);
-    let pyramid = buildPyramid(userClone);
-    res.render("index", { user, pyramid });
+router.get("/api/boards/:token", (req, res, next) => {
+  // req.params.token = "5bfdc57579b35d4ef18e59727fc874df";
+  Board.find({ owner: req.params.token }).then(results => {
+    res.json(results);
   });
-
-  router.get("/login", loggedOutOnly, (req, res) => {
-    res.render("login");
+});
+router.get("/boards", (req, res, next) => {
+  Board.find({}).then(results => {
+    res.json(results);
   });
-
-  router.get("/register", loggedOutOnly, (req, res) => {
-    res.render("register");
+});
+router.get("/users", (req, res, next) => {
+  User.find({}).then(results => {
+    res.json(results);
   });
+});
 
-  router.get("/logout", loggedInOnly, (req, res) => {
-    req.logout();
-    res.redirect("/login");
+router.post("/api/boards/new", (req, res, next) => {
+  let returnBoard;
+  let newBoard = new Board({
+    title: req.body.title,
+    owner: req.body.token
   });
-
-  router.post(
-    "/login",
-    loggedOutOnly,
-    passport.authenticate("local", {
-      successRedirect: "/",
-      failureRedirect: "/login"
+  newBoard
+    .save()
+    .then(board => {
+      let returnBoard = board;
+      res.json(returnBoard);
+      let boardId = board.id.toString();
+      return User.update(
+        { id: req.body.token },
+        { $push: { boards: boardId } }
+      );
     })
-  );
+    .catch(next);
 
-  router.post("/register", loggedOutOnly, (req, res, next) => {
-    const { fname, lname, email, password } = req.body;
-    const user = new User({
-      fname: fname,
-      lname: lname,
-      email: email,
-      points: 0,
-      password: password
-    });
-    user
-      .save()
-      .then(user => {
-        req.login(user, err => {
-          if (err) throw err;
-          res.redirect("/");
-        });
-      })
-      .catch(next);
-  });
+  console.log(req.body);
+});
 
-  return router;
-};
+module.exports = router;

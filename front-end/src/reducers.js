@@ -28,7 +28,7 @@ export function djelloApp(state = initialState, action) {
         isFetching: false,
         error: action.error
       };
-    case Actions.GET_BOARDS:
+    case Actions.GET_BOARDS_SUCCESS:
       return {
         ...state,
         boards: action.data,
@@ -37,7 +37,7 @@ export function djelloApp(state = initialState, action) {
     case Actions.CREATE_BOARD:
       return {
         ...state,
-        boards: [...state.boards, { title: action.data.title, cards: [] }],
+        boards: [...state.boards, action.data],
         isFetching: false
       };
     case Actions.CREATE_CARD:
